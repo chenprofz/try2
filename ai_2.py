@@ -30,6 +30,7 @@ for square, square_id in squares:
     (sx, sy) = square
     ax.add_patch(Rectangle((sx, sy), w, h, alpha=0.5, edgecolor='red', facecolor='none'))
     plt.text(sx + w / 2, sy + h / 2, str(square_id), color='red', fontsize=8, ha='center', va='center')
+    plt.plot(sx + w / 2, sy + h / 2, 'ro', markersize=3)
 x, y = zip(*points)
 plt.scatter(x, y, color='blue', label='Points')
 plt.xlabel('X')
