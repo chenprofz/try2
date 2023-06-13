@@ -91,4 +91,19 @@ points = generate_random_points(num_points)
 grouped_points = group_points_with_knn(points, 3, max_iterations)
 
 # Concatenate all the points in all the groups
-grouped_points = [point for group_points in grouped_points.values()
+grouped_points = [point for group_points in grouped_points.values() for point in group_points]
+
+# Determine the best K value based on the elbow method
+best_k = calculate_best_k(grouped_points, max_k)
+
+# Group the points using the best K value
+grouped_points = group_points_with_knn(points, best_k, max_iterations)
+
+# Concatenate all the points in all the groups
+grouped_points = [point for group_points in grouped_points.values() for point in group_points]
+
+# Find the fixed-size square to cover all the points
+square = find_fixed_size_square(grouped_points)
+
+# Plot the points with different colors based on their group and the fixed-size square
+plot_square(grouped_points, square)
