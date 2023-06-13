@@ -37,45 +37,36 @@ def plot_elbow_curve(points, max_k):
     plt.title('Elbow Curve')
     plt.show()
 
-def calculate_best_k(points, max_k, max_iterations):
-    distortions = []
-    for k in range(1, max_k + 1):
-        kmeans = KMeans(n_clusters=k, max_iter=max_iterations, random_state=0)
-        kmeans.fit(points)
-        distortions.append(kmeans.inertia_)
+def find_fixed_size_square(points, square_size):
+    min_x = min(x for x, _ in points)
+    min_y = min(y for _, y in points)
+    max_x = max(x for x, _ in points)
+    max_y = max(y for _, y in points)
 
-    # Calculate the difference in distortions
-    differences = []
-    for i in range(len(distortions) - 1):
-        differences.append(distortions[i] - distortions[i+1])
+    start_x = min_x - (min_x % square_size)
+    start_y = min_y - (min_y % square_size)
 
-    # Find the best K using the elbow method
-    best_k = differences.index(max(differences)) + 2
+    end_x = max_x + square_size - (max_x % square_size)
+    end_y = max_y + square_size - (max_y % square_size)
 
-    return best_k
+    return (start_x, start_y), (end_x, end_y)
 
-def plot_grouped_points(points, groups):
-    # Plotting the grouped points
-    colors = ['red', 'green', 'blue', 'orange', 'purple']
-    for group_id, group_points in groups.items():
-        group_color = colors[group_id]
-        x, y = zip(*group_points)
-        plt.scatter(x, y, color=group_color, label=f'Group {group_id}')
+def plot_square(points, square):
+    start_point, end_point = square
+    start_x, start_y = start_point
+    end_x, end_y = end_point
 
-        # Find the bounding box for the group
-        min_x = min(x)
-        max_x = max(x)
-        min_y = min(y)
-        max_y = max(y)
+    # Plot the points
+    x, y = zip(*points)
+    plt.scatter(x, y, color='blue', label='Points')
 
-        # Plot the best fitting square
-        square_size = max(max_x - min_x, max_y - min_y)
-        square = plt.Rectangle((min_x, min_y), square_size, square_size, edgecolor='black', facecolor='none')
-        plt.gca().add_patch(square)
+    # Plot the square
+    square_patch = plt.Rectangle((start_x, start_y), end_x - start_x, end_y - start_y, edgecolor='red', facecolor='none')
+    plt.gca().add_patch(square_patch)
 
     plt.xlabel('X')
     plt.ylabel('Y')
-    plt.title('Grouped Points with Best Fitting Squares')
+    plt.title('Points with Fixed-Size Square')
     plt.legend()
     plt.show()
 
@@ -83,18 +74,31 @@ def plot_grouped_points(points, groups):
 num_points = 100
 max_k = 10
 max_iterations = 100
+square_size = 4
 
 # Generate random points
 points = generate_random_points(num_points)
 
+# Group the points using KNN
+grouped_points = group_points_with_knn(points, 3, max_iterations)
+
+# Concatenate all the points in all the groups
+grouped_points = [point for group_points in grouped_points.values() for point in group_points]
+
 # Plot the elbow curve
-plot_elbow_curve(points, max_k)
+plot_elbow_curve(grouped_points, max_k)
 
-# Calculate the best K value automatically
-best_k = calculate_best_k(points, max_k, max_iterations)
+# Determine the best K value based on the elbow curve
+best_k = calculate_best_k(grouped_points, max_k, max_iterations)
 
-# Group the points using the best K
-result = group_points_with_knn(points, best_k, max_iterations)
+# Group the points using the best K value
+grouped_points = group_points_with_knn(points, best_k, max_iterations)
 
-# Plot the grouped points with best fitting squares
-plot_grouped_points(points, result)
+# Concatenate all the points in all the groups
+grouped_points = [point for group_points in grouped_points.values() for point in group_points]
+
+# Find the fixed-size square to cover all the points
+start_point, end_point = find_fixed_size_square(grouped_points, square_size)
+
+# Plot the points with the fixed-size square
+plot_square(grouped_points, (start_point, end_point))
