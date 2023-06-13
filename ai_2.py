@@ -37,6 +37,48 @@ def plot_elbow_curve(points, max_k):
     plt.title('Elbow Curve')
     plt.show()
 
+def calculate_best_k(points, max_k, max_iterations):
+    distortions = []
+    for k in range(1, max_k + 1):
+        kmeans = KMeans(n_clusters=k, max_iter=max_iterations, random_state=0)
+        kmeans.fit(points)
+        distortions.append(kmeans.inertia_)
+
+    # Calculate the difference in distortions
+    differences = []
+    for i in range(len(distortions) - 1):
+        differences.append(distortions[i] - distortions[i+1])
+
+    # Find the best K using the elbow method
+    best_k = differences.index(max(differences)) + 2
+
+    return best_k
+
+def plot_grouped_points(points, groups):
+    # Plotting the grouped points
+    colors = ['red', 'green', 'blue', 'orange', 'purple']
+    for group_id, group_points in groups.items():
+        group_color = colors[group_id]
+        x, y = zip(*group_points)
+        plt.scatter(x, y, color=group_color, label=f'Group {group_id}')
+
+        # Find the bounding box for the group
+        min_x = min(x)
+        max_x = max(x)
+        min_y = min(y)
+        max_y = max(y)
+
+        # Plot the best fitting square
+        square_size = max(max_x - min_x, max_y - min_y)
+        square = plt.Rectangle((min_x, min_y), square_size, square_size, edgecolor='black', facecolor='none')
+        plt.gca().add_patch(square)
+
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('Grouped Points with Best Fitting Squares')
+    plt.legend()
+    plt.show()
+
 # Example usage:
 num_points = 100
 max_k = 10
@@ -48,21 +90,11 @@ points = generate_random_points(num_points)
 # Plot the elbow curve
 plot_elbow_curve(points, max_k)
 
-# Determine the best K based on the elbow curve
-best_k = int(input("Enter the best K value based on the elbow curve: "))
+# Calculate the best K value automatically
+best_k = calculate_best_k(points, max_k, max_iterations)
 
 # Group the points using the best K
 result = group_points_with_knn(points, best_k, max_iterations)
 
-# Plotting the grouped points
-colors = ['red', 'green', 'blue', 'orange', 'purple']
-for group_id, group_points in result.items():
-    group_color = colors[group_id]
-    x, y = zip(*group_points)
-    plt.scatter(x, y, color=group_color, label=f'Group {group_id}')
-
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.title('Grouped Points')
-plt.legend()
-plt.show()
+# Plot the grouped points with best fitting squares
+plot_grouped_points(points, result)
