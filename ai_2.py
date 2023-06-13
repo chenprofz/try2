@@ -20,18 +20,20 @@ solver.Objective().SetMinimization()
 solver.Solve()
 
 squares = []
-for (x, y), var in zip(rectangles, variables):
-    if var.solution_value():
-        squares.append((x, y))
+for i, (x, y) in enumerate(rectangles):
+    if variables[i].solution_value():
+        squares.append(((x, y), i))
 
 # Plot the squares and points
 fig, ax = plt.subplots()
-for square in squares:
-    ax.add_patch(Rectangle(square, w, h, alpha=0.5, edgecolor='red', facecolor='none'))
+for square, square_id in squares:
+    (sx, sy) = square
+    ax.add_patch(Rectangle((sx, sy), w, h, alpha=0.5, edgecolor='red', facecolor='none'))
+    plt.text(sx + w / 2, sy + h / 2, str(square_id), color='red', fontsize=8, ha='center', va='center')
 x, y = zip(*points)
 plt.scatter(x, y, color='blue', label='Points')
 plt.xlabel('X')
 plt.ylabel('Y')
-plt.title('Squares and Points')
+plt.title('Squares and Points with Square IDs')
 plt.legend()
 plt.show()
