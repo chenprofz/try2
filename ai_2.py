@@ -19,18 +19,24 @@ for (x, y), var in zip(rectangles, variables):
 solver.Objective().SetMinimization()
 solver.Solve()
 
-squares = []
+squares = {}
 for i, (x, y) in enumerate(rectangles):
     if variables[i].solution_value():
-        squares.append(((x, y), i))
+        if i not in squares:
+            squares[i] = []
+        squares[i].append((x, y))
 
 # Plot the squares and points
 fig, ax = plt.subplots()
-for square, square_id in squares:
-    (sx, sy) = square
+for square_id, square_points in squares.items():
+    (sx, sy) = square_points[0]
     ax.add_patch(Rectangle((sx, sy), w, h, alpha=0.5, edgecolor='red', facecolor='none'))
     plt.text(sx + w / 2, sy + h / 2, str(square_id), color='red', fontsize=8, ha='center', va='center')
     plt.plot(sx + w / 2, sy + h / 2, 'ro', markersize=3)
+    for point in square_points:
+        px, py = point
+        plt.text(px + w / 2, py + h / 2, str(square_id), color='black', fontsize=6, ha='center', va='center')
+
 x, y = zip(*points)
 plt.scatter(x, y, color='blue', label='Points')
 plt.xlabel('X')
