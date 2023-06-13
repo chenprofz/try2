@@ -39,54 +39,45 @@ def calculate_best_k(points, max_k):
 
     return best_k
 
-def find_fixed_perfect_squares(points, square_size):
+def find_fixed_size_square(points):
     min_x = min(x for x, _ in points)
     min_y = min(y for _, y in points)
     max_x = max(x for x, _ in points)
     max_y = max(y for _, y in points)
 
-    # Calculate the number of perfect squares required
-    num_squares_x = math.ceil((max_x - min_x) / square_size)
-    num_squares_y = math.ceil((max_y - min_y) / square_size)
-    num_squares = max(num_squares_x, num_squares_y)
+    # Determine the size of the square
+    square_size = max(max_x - min_x, max_y - min_y)
 
-    start_x = min_x - (min_x % square_size)
-    start_y = min_y - (min_y % square_size)
+    start_x = min_x
+    start_y = min_y
 
-    end_x = start_x + (num_squares * square_size)
-    end_y = start_y + (num_squares * square_size)
+    end_x = start_x + square_size
+    end_y = start_y + square_size
 
     return (start_x, start_y), (end_x, end_y)
 
-def plot_squares(grouped_points, squares):
-    # Get unique group labels
-    group_labels = set(grouped_points.keys())
+def plot_square(points, square):
+    start_point, end_point = square
+    start_x, start_y = start_point
+    end_x, end_y = end_point
 
-    # Plot the points with different colors for each group
-    for group_label in group_labels:
-        group_points = grouped_points[group_label]
-        x, y = zip(*group_points)
-        plt.scatter(x, y, label=f'Group {group_label}')
+    # Plot the points
+    x, y = zip(*points)
+    plt.scatter(x, y)
 
-    # Plot the squares
-    for square in squares:
-        start_point, end_point = square
-        start_x, start_y = start_point
-        end_x, end_y = end_point
-        square_patch = plt.Rectangle((start_x, start_y), end_x - start_x, end_y - start_y, edgecolor='red', facecolor='none')
-        plt.gca().add_patch(square_patch)
+    # Plot the square
+    square_patch = plt.Rectangle((start_x, start_y), end_x - start_x, end_y - start_y, edgecolor='red', facecolor='none')
+    plt.gca().add_patch(square_patch)
 
     plt.xlabel('X')
     plt.ylabel('Y')
-    plt.title('Points with Fixed-Size Squares')
-    plt.legend()
+    plt.title('Points with Fixed-Size Square')
     plt.show()
 
 # Example usage:
 num_points = 100
 max_k = 10
 max_iterations = 100
-square_size = 5
 
 # Generate random points
 points = generate_random_points(num_points)
@@ -106,13 +97,8 @@ grouped_points = group_points_with_knn(points, best_k, max_iterations)
 # Concatenate all the points in all the groups
 grouped_points = [point for group_points in grouped_points.values() for point in group_points]
 
-# Find the fixed-size squares to cover all the points
-squares = []
-while len(grouped_points) > best_k:
-    square = find_fixed_perfect_squares(grouped_points, square_size)
-    squares.append(square)
-    # Remove the points covered by the square
-    grouped_points = [point for point in grouped_points if not (square[0][0] <= point[0] <= square[1][0] and square[0][1] <= point[1] <= square[1][1])]
+# Find the fixed-size square to cover all the points
+square = find_fixed_size_square(grouped_points)
 
-# Plot the points with different colors based on their group and the fixed-size squares
-plot_squares(grouped_points, squares)
+# Plot the points with the square
+plot_square(grouped_points, square)
