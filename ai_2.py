@@ -23,7 +23,7 @@ def group_points_with_knn(points, k, max_iterations):
 
     return groups
 
-def find_fixed_size_squares(points, square_size):
+def find_fixed_size_squares(points):
     squares = []
     remaining_points = set(points)
 
@@ -32,11 +32,12 @@ def find_fixed_size_squares(points, square_size):
         x, y = current_point
 
         # Calculate the starting coordinates for the square
+        square_size = math.ceil(math.sqrt(len(remaining_points)))  # Calculate the size as square root of remaining points rounded up
         start_x = x - (x % square_size)
         start_y = y - (y % square_size)
 
         # Add the square to the list
-        squares.append((start_x, start_y))
+        squares.append((start_x, start_y, square_size))
 
         # Remove points covered by the square
         points_to_remove = []
