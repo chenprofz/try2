@@ -36,7 +36,7 @@ def find_fixed_size_squares(points, square_size):
         start_y = y - (y % square_size)
 
         # Add the square to the list
-        squares.append((start_x, start_y))
+        squares.append(((start_x, start_y), square_size))
 
         # Remove points covered by the square
         points_to_remove = []
@@ -50,13 +50,18 @@ def find_fixed_size_squares(points, square_size):
 
     return squares
 
-def plot_squares(points, squares, square_size):
+def plot_squares(points, squares):
+    # Create a color map for different squares
+    cmap = plt.get_cmap('tab10')
+
     # Plot the points
-    x, y = zip(*points)
-    plt.scatter(x, y, color='blue', label='Points')
+    for square_id, (square, _) in enumerate(squares):
+        square_points = [point for point in points if square[0] <= point[0] < square[0] + square[1] and square[1] <= point[1] < square[1] + square[1]]
+        x, y = zip(*square_points)
+        plt.scatter(x, y, color=cmap(square_id), label=f'Square {square_id+1}')
 
     # Plot the squares
-    for square in squares:
+    for square, square_size in squares:
         start_x, start_y = square
         square_patch = plt.Rectangle((start_x, start_y), square_size, square_size, edgecolor='red', facecolor='none')
         plt.gca().add_patch(square_patch)
@@ -85,4 +90,4 @@ grouped_points = [point for group_points in grouped_points.values() for point in
 squares = find_fixed_size_squares(grouped_points, square_size)
 
 # Plot the squares and points
-plot_squares(grouped_points, squares, square_size)
+plot_squares(grouped_points, squares)
