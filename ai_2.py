@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.datasets import make_blobs
 import numpy as np
+import math
 
 def generate_random_points(n):
     # Generate n random points using make_blobs
@@ -38,11 +39,13 @@ def calculate_best_k(points, max_k):
 
     return best_k
 
-def find_fixed_size_square(points, square_size):
+def find_fixed_size_square(points):
     min_x = min(x for x, _ in points)
     min_y = min(y for _, y in points)
     max_x = max(x for x, _ in points)
     max_y = max(y for _, y in points)
+
+    square_size = math.ceil(math.sqrt(len(points)))  # Calculate the size as square root of total points rounded up
 
     start_x = min_x - (min_x % square_size)
     start_y = min_y - (min_y % square_size)
@@ -52,14 +55,19 @@ def find_fixed_size_square(points, square_size):
 
     return (start_x, start_y), (end_x, end_y)
 
-def plot_square(points, square):
+def plot_square(grouped_points, square):
     start_point, end_point = square
     start_x, start_y = start_point
     end_x, end_y = end_point
 
-    # Plot the points
-    x, y = zip(*points)
-    plt.scatter(x, y, color='blue', label='Points')
+    # Get unique group labels
+    group_labels = set(grouped_points.keys())
+
+    # Plot the points with different colors for each group
+    for group_label in group_labels:
+        group_points = grouped_points[group_label]
+        x, y = zip(*group_points)
+        plt.scatter(x, y, label=f'Group {group_label}')
 
     # Plot the square
     square_patch = plt.Rectangle((start_x, start_y), end_x - start_x, end_y - start_y, edgecolor='red', facecolor='none')
@@ -75,7 +83,6 @@ def plot_square(points, square):
 num_points = 100
 max_k = 10
 max_iterations = 100
-square_size = 4
 
 # Generate random points
 points = generate_random_points(num_points)
@@ -84,19 +91,4 @@ points = generate_random_points(num_points)
 grouped_points = group_points_with_knn(points, 3, max_iterations)
 
 # Concatenate all the points in all the groups
-grouped_points = [point for group_points in grouped_points.values() for point in group_points]
-
-# Determine the best K value based on the elbow method
-best_k = calculate_best_k(grouped_points, max_k)
-
-# Group the points using the best K value
-grouped_points = group_points_with_knn(points, best_k, max_iterations)
-
-# Concatenate all the points in all the groups
-grouped_points = [point for group_points in grouped_points.values() for point in group_points]
-
-# Find the fixed-size square to cover all the points
-start_point, end_point = find_fixed_size_square(grouped_points, square_size)
-
-# Plot the points with the fixed-size square
-plot_square(grouped_points, (start_point, end_point))
+grouped_points = [point for group_points in grouped_points.values()
