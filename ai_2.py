@@ -1,8 +1,6 @@
 import math
-import numpy as np
-from scipy.spatial import cKDTree
 
-def group_points_with_knn_squares(points, K, square_size):
+def group_points_without_intersection(points, square_size, max_squares):
     min_x = min(points, key=lambda p: p[0])[0]
     max_x = max(points, key=lambda p: p[0])[0]
     min_y = min(points, key=lambda p: p[1])[1]
@@ -14,46 +12,71 @@ def group_points_with_knn_squares(points, K, square_size):
     num_columns = math.ceil(width / square_size)
     num_rows = math.ceil(height / square_size)
 
-    squares = np.empty((num_rows, num_columns), dtype=object)
+    best_solution = []
 
-    for point in points:
-        x = point[0]
-        y = point[1]
+    def group_points_recursive(squares, square_index, remaining_points):
+        nonlocal best_solution
 
-        column = math.floor((x - min_x) / square_size)
-        row = math.floor((y - min_y) / square_size)
+        if square_index == max_squares:
+            if len(remaining_points) == 0:
+                if len(squares) < len(best_solution):
+                    best_solution = squares.copy()
+            return
 
-        if squares[row, column] is None:
-            squares[row, column] = []
+        for i in range(square_index, num_rows * num_columns):
+            square = get_square_from_index(i)
+            if not is_square_intersecting(square, squares):
+                new_squares = squares[:]
+                new_squares.append(square)
 
-        squares[row, column].append(point)
+                new_remaining_points = remaining_points[:]
+                for point in remaining_points:
+                    if is_point_in_square(point, square):
+                        new_remaining_points.remove(point)
 
-    groups = {}
+                group_points_recursive(new_squares, square_index + 1, new_remaining_points)
 
-    for row in range(num_rows):
-        for column in range(num_columns):
-            if squares[row, column] is not None:
-                for point in squares[row, column]:
-                    neighbors = []
-                    for i in range(max(0, row-1), min(num_rows, row+2)):
-                        for j in range(max(0, column-1), min(num_columns, column+2)):
-                            if squares[i, j] is not None:
-                                neighbors.extend(squares[i, j])
+    def get_square_from_index(index):
+        column = index % num_columns
+        row = index // num_columns
 
-                    kdtree = cKDTree(neighbors)
-                    _, indices = kdtree.query(point, K+1)
-                    indices = indices[1:]  # Exclude the point itself from the neighbors
+        x = min_x + column * square_size
+        y = min_y + row * square_size
 
-                    if len(indices) < K:
-                        groups[point] = neighbors
-                    else:
-                        groups[point] = [neighbors[i] for i in indices]
+        square = (x, y, square_size)
+        return square
 
-    return groups
+    def is_square_intersecting(square, squares):
+        for existing_square in squares:
+            if check_square_intersection(square, existing_square):
+                return True
+        return False
+
+    def check_square_intersection(square1, square2):
+        x1, y1, size1 = square1
+        x2, y2, size2 = square2
+
+        if abs(x1 - x2) < size1 + size2 and abs(y1 - y2) < size1 + size2:
+            return True
+        return False
+
+    def is_point_in_square(point, square):
+        x, y, size = square
+        point_x, point_y = point
+
+        if abs(point_x - x) <= size / 2 and abs(point_y - y) <= size / 2:
+            return True
+        return False
+
+    group_points_recursive([], 0, points)
+    return best_solution
 
 # Example usage:
-points = [(1, 1), (3, 4), (2, 2), (4, 3), (5, 5)]
-K = 2
-square_size = 2
+points = [(1, 1), (2, 2), (4, 3), (3, 4), (5, 5), (6, 7), (9, 8)]
+square_size = 3
+max_squares = 3
 
-result = group_points_with_knn_squares(points, K
+solution = group_points_without_intersection(points, square_size, max_squares)
+print("Minimum number of squares:", len(solution))
+for i, square in enumerate(solution):
+    print(f"Square {i+1}: {square}")
