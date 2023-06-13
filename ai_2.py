@@ -22,7 +22,19 @@ def group_points_with_knn(points, k, max_iterations):
         groups[group_id].append(point)
 
     return groups
+def calculate_best_k(points, max_k):
+    distortions = []
+    for k in range(1, max_k + 1):
+        kmeans = KMeans(n_clusters=k)
+        kmeans.fit(points)
+        distortions.append(kmeans.inertia_)
 
+    distortions = np.array(distortions)
+    gradients = np.gradient(distortions)
+    elbow_index = np.argmax(gradients)
+    best_k = elbow_index + 1
+
+    return best_k
 def plot_elbow_curve(points, max_k):
     distortions = []
     for k in range(1, max_k + 1):
@@ -74,7 +86,7 @@ points = generate_random_points(num_points)
 plot_elbow_curve(points, max_k)
 
 # Determine the best K based on the elbow curve
-best_k = int(input("Enter the best K value based on the elbow curve: "))
+best_k = calculate_best_k(points, max_k)
 
 # Group the points using the best K
 result = group_points_with_knn(points, best_k, max_iterations)
