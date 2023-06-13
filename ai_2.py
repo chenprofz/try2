@@ -20,11 +20,15 @@ solver.Objective().SetMinimization()
 solver.Solve()
 
 squares = {}
+point_squares = {}  # Dictionary to store the square ID for each point
 for i, (x, y) in enumerate(rectangles):
     if variables[i].solution_value():
         if i not in squares:
             squares[i] = []
         squares[i].append((x, y))
+        for j, point in enumerate(points):
+            if x <= point[0] <= x + w and y <= point[1] <= y + h:
+                point_squares[j] = i
 
 # Plot the squares and points
 fig, ax = plt.subplots()
@@ -35,7 +39,14 @@ for square_id, square_points in squares.items():
     plt.plot(sx + w / 2, sy + h / 2, 'ro', markersize=3)
     for point in square_points:
         px, py = point
-        plt.text(px + w / 2, py + h / 2, str(square_id), color='black', fontsize=6, ha='center', va='center')
+        plt.text(px, py, str(square_id), color='black', fontsize=6, ha='center', va='center')
+
+for i, (x, y) in enumerate(points):
+    plt.text(x, y, str(i), color='blue', fontsize=6, ha='center', va='center')
+    square_id = point_squares.get(i)
+    if square_id is not None:
+        (sx, sy) = squares[square_id][0]
+        plt.plot([x, sx + w / 2], [y, sy + h / 2], '--', color='gray')
 
 x, y = zip(*points)
 plt.scatter(x, y, color='blue', label='Points')
