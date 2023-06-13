@@ -1,6 +1,6 @@
 import math
 
-def group_points_without_intersection(points, square_size, max_squares):
+def group_points_with_group_id(points, square_size, max_squares):
     min_x = min(points, key=lambda p: p[0])[0]
     max_x = max(points, key=lambda p: p[0])[0]
     min_y = min(points, key=lambda p: p[1])[1]
@@ -69,14 +69,26 @@ def group_points_without_intersection(points, square_size, max_squares):
         return False
 
     group_points_recursive([], 0, points)
-    return best_solution
+
+    groups = {}
+    for i, square in enumerate(best_solution):
+        for point in points:
+            if is_point_in_square(point, square):
+                if point not in groups:
+                    groups[point] = []
+
+                groups[point].append(i)
+
+    return groups
 
 # Example usage:
 points = [(1, 1), (2, 2), (4, 3), (3, 4), (5, 5), (6, 7), (9, 8)]
 square_size = 3
 max_squares = 3
 
-solution = group_points_without_intersection(points, square_size, max_squares)
-print("Minimum number of squares:", len(solution))
-for i, square in enumerate(solution):
-    print(f"Square {i+1}: {square}")
+result = group_points_with_group_id(points, square_size, max_squares)
+
+for point, group_ids in result.items():
+    print("Point:", point)
+    print("Group IDs:", group_ids)
+    print()
