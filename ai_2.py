@@ -50,6 +50,22 @@ def find_fixed_size_square(points, square_size):
     end_y = max_y + square_size - (max_y % square_size)
 
     return (start_x, start_y), (end_x, end_y)
+def calculate_best_k(points, max_k, max_iterations):
+    distortions = []
+    for k in range(1, max_k + 1):
+        kmeans = KMeans(n_clusters=k, max_iter=max_iterations, random_state=0)
+        kmeans.fit(points)
+        distortions.append(kmeans.inertia_)
+
+    # Calculate the difference in distortions
+    differences = []
+    for i in range(len(distortions) - 1):
+        differences.append(distortions[i] - distortions[i+1])
+
+    # Find the best K using the elbow method
+    best_k = differences.index(max(differences)) + 2
+
+    return best_k
 
 def plot_square(points, square):
     start_point, end_point = square
