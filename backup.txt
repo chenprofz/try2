@@ -1,0 +1,5 @@
+https://stackoverflow.com/questions/51622111/opencv-c-mingw-vscode-fatal-error-to-compile/51801863#51801863
+https://cloud.tencent.com/developer/article/1540893
+https://developer.aliyun.com/article/1113537
+
+g++ C:\Users\User\Desktop\c_cpp\TestDll.cpp -IC:\OpenCV-MinGW-Build\include -LC:\mingw64\bin -LC:\OpenCV-MinGW-Build\x64\mingw\bin -llibopencv_calib3d341 -llibopencv_core341 -llibopencv_dnn341 -llibopencv_features2d341 -llibopencv_flann341 -llibopencv_highgui341 -llibopencv_imgcodecs341 -llibopencv_imgproc341 -llibopencv_ml341 -llibopencv_objdetect341 -llibopencv_photo341 -llibopencv_shape341 -llibopencv_stitching341 -llibopencv_superres341 -llibopencv_video341 -llibopencv_videoio341 -llibopencv_videostab341 -shared -o C:\Users\User\Desktop\c_cpp\TestDll.dll
